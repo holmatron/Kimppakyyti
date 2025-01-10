@@ -166,21 +166,21 @@
     </div>
 
     <script>
-        // Google Maps API:n alustaminen (lisätään myöhemmin avain)
+        // Google Maps API:n alustaminen (välitä avain myöhemmin)
         function initMap() {
             const map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 60.1699, lng: 24.9384 }, // Helsinki
                 zoom: 10
             });
 
-            // Esimerkkireitti (Helsinki - Espoo)
+            // Esimerkkireitti (Helsinki - Vantaa)
             const directionsService = new google.maps.DirectionsService();
             const directionsRenderer = new google.maps.DirectionsRenderer();
             directionsRenderer.setMap(map);
 
             const request = {
                 origin: "Helsinki, Finland",
-                destination: "Espoo, Finland",
+                destination: "Vantaa, Finland",
                 travelMode: 'DRIVING',
                 drivingOptions: {
                     departureTime: new Date(Date.now() + 60000), // Oletetaan lähtö minuutin päästä
@@ -210,6 +210,7 @@
             }
         });
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    // Välitä avain myöhemmin!
+    <script src="https://maps.googleapis.com/maps/api/js?key=SATUNNAINEN_API_KEY&callback=initMap" async defer></script>
 </body>
 </html>
