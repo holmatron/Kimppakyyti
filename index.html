@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LindaLoop - Kimppakyytisovellus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f9f6; /* Vaaleanvihreä Suomen luonnosta */
+        }
+
+        header {
+            background-color: #2c6e49; /* Tumma vihreä */
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #1b4332; /* Syvä vihreä */
+            padding: 0.5rem 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            padding: 1rem;
+        }
+
+        .btn {
+            background-color: #ffba08; /* Kirkas keltainen */
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #faa307; /* Tummempi keltainen */
+        }
+
+        .card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .map-container {
+            height: 400px;
+            width: 100%;
+            margin-top: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .role-switch {
+            margin-top: 1rem;
+        }
+
+        .role-switch button {
+            margin-right: 1rem;
+        }
+
+        .messages-container {
+            margin-top: 2rem;
+        }
+
+        .message {
+            background: #e8f5e9; /* Vaalea vihreä */
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .arrival-time {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #1b4332; /* Syvä vihreä */
+        }
+
+        .suggest-stop {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .suggest-stop input, .suggest-stop button {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .suggest-stop button {
+            background-color: #2c6e49; /* Tumma vihreä */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .suggest-stop button:hover {
+            background-color: #1b4332; /* Syvä vihreä */
+        }
+    </style>
+</head>
+<body>
+    <header>LindaLoop - Yhdessä matkaten</header>
+    <nav>
+        <a href="#routes">Reitit</a>
+        <a href="#messages">Viestit</a>
+        <a href="#profile">Profiili</a>
+        <a href="#analytics">Analytiikka</a>
+    </nav>
+
+    <div class="container">
+        <h1>Hei, tervetuloa LindaLoop kimppakyytisovellukseen!</h1>
+        <p>Valitse roolisi:</p>
+        <div class="role-switch">
+            <button class="btn">Kuljettaja</button>
+            <button class="btn">Matkustaja</button>
+        </div>
+
+        <div class="card">
+            <h2>Seuraavat kyydit</h2>
+            <p>Ei tarjottuja kyytejä tällä hetkellä. Luo uusi kyyti tai liity olemassa olevaan.</p>
+        </div>
+
+        <h2>Kartta</h2>
+        <div id="map" class="map-container"></div>
+
+        <div class="arrival-time" id="arrival-time">Arvioitu saapumisaika: laskenta käynnissä...</div>
+
+        <div class="suggest-stop">
+            <h3>Ehdota pysäkkiä</h3>
+            <label for="stop-location">Pysäkin sijainti:</label>
+            <input type="text" id="stop-location" placeholder="Kirjoita pysäkin osoite tai nimi">
+            <button id="suggest-stop-btn">Ehdota pysäkkiä</button>
+            <p id="suggestion-feedback" style="color: green; display: none;">Pysäkki ehdotettu onnistuneesti!</p>
+        </div>
+
+        <div class="messages-container">
+            <h2>Viestit</h2>
+            <div class="message">Tervetuloa kimppakyytisovellukseen!</div>
+            <div class="message">Muistathan ilmoittaa vapaista paikoista ajoissa.</div>
+        </div>
+    </div>
+
+    <script>
+        // Google Maps API:n alustaminen (lisätään myöhemmin avain)
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 60.1699, lng: 24.9384 }, // Helsinki
+                zoom: 10
+            });
+
+            // Esimerkkireitti (Helsinki - Espoo)
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            const request = {
+                origin: "Helsinki, Finland",
+                destination: "Espoo, Finland",
+                travelMode: 'DRIVING',
+                drivingOptions: {
+                    departureTime: new Date(Date.now() + 60000), // Oletetaan lähtö minuutin päästä
+                    trafficModel: 'pessimistic'
+                }
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    const leg = result.routes[0].legs[0];
+                    document.getElementById('arrival-time').innerText = `Arvioitu saapumisaika: ${leg.duration.text}`;
+                } else {
+                    document.getElementById('arrival-time').innerText = 'Saapumisajan laskenta epäonnistui.';
+                }
+            });
+        }
+
+        // Pysäkin ehdottaminen
+        document.getElementById('suggest-stop-btn').addEventListener('click', () => {
+            const stopLocation = document.getElementById('stop-location').value;
+            if (stopLocation) {
+                document.getElementById('suggestion-feedback').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('suggestion-feedback').style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+</body>
+</html>
